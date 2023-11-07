@@ -17,6 +17,7 @@ package mapper
 import (
 	"reflect"
 
+	"github.com/google/uuid"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/util/contract"
 )
 
@@ -83,6 +84,10 @@ func (md *mapper) EncodeValue(v interface{}) (interface{}, MappingError) {
 
 func (md *mapper) encodeValue(vsrc reflect.Value) (interface{}, MappingError) {
 	contract.Requiref(vsrc.IsValid(), "vsrc", "value must be valid")
+
+	if vsrc.Type() == reflect.TypeOf(uuid.UUID{}) {
+		return vsrc.Interface().(uuid.UUID).String(), nil
+	}
 
 	// Otherwise, try to map to the closest JSON-like destination type we can.
 	switch k := vsrc.Kind(); k {
@@ -156,7 +161,7 @@ func (md *mapper) encodeValue(vsrc reflect.Value) (interface{}, MappingError) {
 		}
 		return md.encodeValue(vsrc.Elem())
 	default:
-		contract.Failf("Unrecognized field type '%v' during encoding", k)
+		contract.Failf("Unrecognized field type '%v' %v during encoding", k, vsrc)
 	}
 
 	return nil, nil
