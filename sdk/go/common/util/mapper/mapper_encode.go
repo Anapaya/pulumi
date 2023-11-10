@@ -15,6 +15,7 @@
 package mapper
 
 import (
+	"encoding/json"
 	"reflect"
 
 	"github.com/google/uuid"
@@ -87,6 +88,22 @@ func (md *mapper) encodeValue(vsrc reflect.Value) (interface{}, MappingError) {
 
 	if vsrc.Type() == reflect.TypeOf(uuid.UUID{}) {
 		return vsrc.Interface().(uuid.UUID).String(), nil
+	}
+	if vsrc.Type() == reflect.TypeOf(json.RawMessage{}) {
+		// Transform raw message into a ordered JSON representation.
+		raw, err := vsrc.Interface().(json.RawMessage).MarshalJSON()
+		if err != nil {
+			return nil, NewMappingError([]error{err})
+		}
+		var m any
+		if err = json.Unmarshal(raw, &m); err != nil {
+			return nil, NewMappingError([]error{err})
+		}
+		b, err := json.Marshal(m)
+		if err != nil {
+			return nil, NewMappingError([]error{err})
+		}
+		return string(b), nil
 	}
 
 	// Otherwise, try to map to the closest JSON-like destination type we can.
