@@ -1837,7 +1837,7 @@ func getPluginInfoAndPath(
 			// N.B, that we don't _return_ the resolved path, we return the original path. Also if resolving
 			// hits any errors then we just skip this warning, better to not warn than to error in a new way.
 			if err == nil {
-				if fullAmbientPath != bundledPath {
+				if fullAmbientPath != bundledPath && !strings.Contains(ambientPath, "bazel-out") {
 					d.Warningf(diag.Message("", "using %s from $PATH at %s"), filename, ambientPath)
 				}
 			}
