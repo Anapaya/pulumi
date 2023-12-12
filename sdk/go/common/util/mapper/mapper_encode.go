@@ -86,7 +86,7 @@ func (md *mapper) EncodeValue(v interface{}) (interface{}, MappingError) {
 func (md *mapper) encodeValue(vsrc reflect.Value) (interface{}, MappingError) {
 	contract.Requiref(vsrc.IsValid(), "vsrc", "value must be valid")
 
-	if vsrc.Type() == reflect.TypeOf(uuid.UUID{}) {
+	if vsrc.Type().AssignableTo(reflect.TypeOf(uuid.UUID{})) {
 		return vsrc.Interface().(uuid.UUID).String(), nil
 	}
 	if vsrc.Type() == reflect.TypeOf(json.RawMessage{}) {
