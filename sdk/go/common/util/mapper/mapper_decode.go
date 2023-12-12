@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/google/uuid"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/util/contract"
 )
 
@@ -120,6 +121,13 @@ func (md *mapper) DecodeValue(obj map[string]interface{}, ty reflect.Type, key s
 			// Finally, provided everything is kosher, go ahead and store the value; otherwise, issue an error.
 			if vsrc.Type().AssignableTo(vdstType) {
 				vdst.Elem().Set(vsrc)
+				return nil
+			}
+
+			// If the destination is a UUID, we need to handle cases where the UUID is not set.
+			// This happens for example in the plan phase of Pulumi up. The zero value is
+			// []interface{}(nil) because the uuid.UUID type has the underlying type array of bytes.
+			if vdstType.AssignableTo(reflect.TypeOf(uuid.UUID{})) && vsrc.Type().AssignableTo(reflect.TypeOf([]interface{}(nil))) {
 				return nil
 			}
 
