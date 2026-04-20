@@ -17,6 +17,7 @@ package mapper
 import (
 	"encoding/json"
 	"reflect"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/util/contract"
@@ -88,6 +89,9 @@ func (md *mapper) encodeValue(vsrc reflect.Value) (interface{}, MappingError) {
 
 	if vsrc.Type().AssignableTo(reflect.TypeOf(uuid.UUID{})) {
 		return vsrc.Interface().(uuid.UUID).String(), nil
+	}
+	if vsrc.Type().AssignableTo(reflect.TypeOf(time.Time{})) {
+		return vsrc.Interface().(time.Time).UTC().Format(time.RFC3339), nil
 	}
 	if vsrc.Type() == reflect.TypeOf(json.RawMessage{}) {
 		// Transform raw message into a ordered JSON representation.
